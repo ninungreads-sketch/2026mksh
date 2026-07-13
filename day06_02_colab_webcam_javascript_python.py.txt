@@ -1,0 +1,31 @@
+#day06_02_colab_webcam_javascript_python.py
+from IPython.display import Javascript, display
+from google.colab.output import eval_js
+from google.colab.patches import cv2_imshow
+from base64 import b64decode
+import cv2
+js = Javascript('''
+async function takePhoto(){
+  const stream = await navigator.mediaDevices.getUserMedia({video:true});
+  const video = document.createElement('video');
+  video.srcObject = stream;
+  await video.play();
+
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+
+  stream.getTracks().forEach(t=>t.stop());
+  return canvas.toDataURL('image/jpeg');
+}
+''')
+
+display(js)
+
+data = eval_js('takePhoto()')
+with open('photo.jpg','wb') as f:
+    f.write(b64decode(data.split(',')[1]))
+
+img = cv2.imread('photo.jpg')
+cv2_imshow(img) 
